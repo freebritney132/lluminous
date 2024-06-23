@@ -4,8 +4,9 @@ import { persisted } from './localstorage.js';
 export const controller = writable(null);
 
 export const params = persisted('params', {
-	temperature: 0.3,
 	maxTokens: 0,
+	temperature: 0.3,
+	top_p: 1,
 });
 
 export const config = persisted('config', {
@@ -13,6 +14,8 @@ export const config = persisted('config', {
 });
 
 export const openaiAPIKey = persisted('openaiAPIKey', '');
+export const proxyBaseURL = persisted('proxyBaseURL', '');
+export const proxyAPIKey = persisted('proxyAPIKey', '');
 export const openrouterAPIKey = persisted('openrouterkey', '');
 export const groqAPIKey = persisted('groqAPIKey', '');
 export const mistralAPIKey = persisted('mistralAPIKey', '');

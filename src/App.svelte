@@ -27,6 +27,8 @@
 		controller,
 		remoteServer,
 		openaiAPIKey,
+		proxyBaseURL,
+		proxyAPIKey,
 		groqAPIKey,
 		openrouterAPIKey,
 		config,
@@ -110,7 +112,7 @@
 			}
 		}
 
-		if (!convo.shared && $openaiAPIKey === '' && $groqAPIKey === '' && $openrouterAPIKey === '') {
+		if (!convo.shared && $openaiAPIKey === '' && $proxyBaseURL === '' && $proxyAPIKey === '' && $groqAPIKey === '' && $openrouterAPIKey === '') {
 			settingsModalOpen = true;
 		}
 	};
@@ -932,7 +934,16 @@
 				if (!provider.apiKeyFn()) {
 					return [];
 				}
-				return fetch(`${provider.url}/v1/models`, {
+
+				let baseURL;
+				
+				if (typeof provider.url === "function") {
+					baseURL = provider.url();
+				} else {
+					baseURL = provider.url
+				}
+
+				return fetch(`${baseURL}/v1/models`, {
 					method: 'GET',
 					headers: {
 						Authorization:
@@ -953,8 +964,9 @@
 						}));
 						return externalModels;
 					})
-					.catch(() => {
+					.catch((e) => {
 						console.log('Error fetching models from provider', provider.name);
+						console.log(e);
 						return [];
 					});
 			});

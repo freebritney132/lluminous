@@ -1,5 +1,5 @@
 import { get } from 'svelte/store';
-import { controller, openaiAPIKey, openrouterAPIKey, params, toolSchema } from './stores.js';
+import { controller, openaiAPIKey, proxyBaseURL, proxyAPIKey, openrouterAPIKey, params, toolSchema } from './stores.js';
 import { providers } from './providers.js';
 
 // OpenAI doesn't provide any metadata for their models, so we have to harddcode which ones are multimodal
@@ -33,7 +33,7 @@ export function formatModelName(model) {
 	let name = model.name;
 
 	// If providers clash, disambiguate provider name
-	const disambiguate = get(openaiAPIKey).length > 0 && get(openrouterAPIKey).length > 0;
+	const disambiguate = get(openaiAPIKey).length > 0 && get(proxyBaseURL).length > 0 && get(proxyAPIKey).length > 0 && get(openrouterAPIKey).length > 0;
 
 	if (model.provider === 'OpenAI') {
 		name = name.replace('gpt', 'GPT').replace('dall-e-3', 'DALL-E 3');
@@ -42,9 +42,12 @@ export function formatModelName(model) {
 	if (model.provider === 'Groq') {
 		return model.provider + ': ' + name;
 	}
+
 	if (disambiguate && model.provider === 'OpenRouter' && name.includes(': ')) {
 		return model.provider + ': ' + name.split(': ')[1];
 	}
+
+
 	if (disambiguate) {
 		return model.provider + ': ' + name;
 	}
@@ -176,11 +179,19 @@ export async function complete(convo, onupdate, onabort, ondirect) {
 
 		const provider = providers.find((p) => p.name === convo.model.provider);
 
+		let baseURL;
+		
+		if (typeof provider.url === "function") {
+			baseURL = provider.url();
+		} else {
+			baseURL = provider.url
+		}
+
 		// All providers now support streaming completions for tool calls!
 		const stream = true;
 
 		const completions = async (signal) => {
-			return fetch(`${provider.url}/v1/chat/completions`, {
+			return fetch(`${baseURL}/v1/chat/completions`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${provider.apiKeyFn()}`,
@@ -197,6 +208,7 @@ export async function complete(convo, onupdate, onabort, ondirect) {
 					stream,
 					model: convo.model.id,
 					temperature: param.temperature,
+					top_k: param.top_k != null ? param.top_k : 1,
 					max_tokens: param.maxTokens != null && param.maxTokens > 0 ? param.maxTokens : undefined,
 					tools: activeSchema.length > 0 ? activeSchema : undefined,
 					messages,

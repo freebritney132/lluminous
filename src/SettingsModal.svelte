@@ -5,6 +5,8 @@
 		groqAPIKey,
 		mistralAPIKey,
 		openaiAPIKey,
+		proxyBaseURL,
+		proxyAPIKey,
 		openrouterAPIKey,
 		params,
 		remoteServer,
@@ -21,7 +23,7 @@
 	export let trigger = '';
 
 	let activeTab =
-		$openaiAPIKey === '' && $groqAPIKey === '' && $openrouterAPIKey === '' ? 'api-keys' : 'tools';
+		$openaiAPIKey === '' && $proxyBaseURL === '' && $proxyAPIKey === '' && $groqAPIKey === '' && $openrouterAPIKey === '' ? 'api-keys' : 'tools';
 </script>
 
 <Modal bind:open {trigger}>
@@ -125,7 +127,34 @@
 						}}
 					/></label
 				>
-
+				<label class="flex flex-col text-[10px] uppercase tracking-wide">
+					<span class="mb-2 ml-[3px]">Proxy Base URL</span>
+					<input
+						type="text"
+						bind:value={$proxyBaseURL}
+						placeholder="Enter your Proxy's URL"
+						class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 transition-colors placeholder:text-gray-500 focus:border-slate-400 focus:outline-none"
+						on:change={() => {
+							if ($proxyBaseURL.length === 0) {
+								dispatch('fetchModels');
+							}
+						}}
+					/></label
+				>
+				<label class="flex flex-col text-[10px] uppercase tracking-wide">
+					<span class="mb-2 ml-[3px]">Proxy Password</span>
+					<input
+						type="text"
+						bind:value={$proxyAPIKey}
+						placeholder="If your Proxy requires a Password or Token"
+						class="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-800 transition-colors placeholder:text-gray-500 focus:border-slate-400 focus:outline-none"
+						on:change={() => {
+							if ($proxyAPIKey.length === 0) {
+								dispatch('fetchModels');
+							}
+						}}
+					/></label
+				>
 				<p class="ml-1 text-center text-xs leading-relaxed text-slate-800 sm:text-left">
 					Your API keys are stored entirely locally, on your device, in your browser. They are not
 					sent to or stored on any remote server.
